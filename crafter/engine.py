@@ -26,8 +26,8 @@ class World:
   def __init__(self, area, materials, chunk_size):
     self.area = area
     self._chunk_size = chunk_size
-    self._mat_names = {i: x for i, x in enumerate([None] + materials)}
-    self._mat_ids = {x: i for i, x in enumerate([None] + materials)}
+    self.mat_names = {i: x for i, x in enumerate([None] + materials)}
+    self.mat_ids = {x: i for i, x in enumerate([None] + materials)}
     self.reset()
 
   def reset(self, seed=None):
@@ -80,15 +80,15 @@ class World:
     obj.pos = pos
 
   def __setitem__(self, pos, material):
-    if material not in self._mat_ids:
-      id_ = len(self._mat_ids)
-      self._mat_ids[material] = id_
-    self._mat_map[tuple(pos)] = self._mat_ids[material]
+    if material not in self.mat_ids:
+      id_ = len(self.mat_ids)
+      self.mat_ids[material] = id_
+    self._mat_map[tuple(pos)] = self.mat_ids[material]
 
   def __getitem__(self, pos):
     if not _inside((0, 0), pos, self.area):
       return None, None
-    material = self._mat_names[self._mat_map[tuple(pos)]]
+    material = self.mat_names[self._mat_map[tuple(pos)]]
     obj = self._objects[self._obj_map[tuple(pos)]]
     return material, obj
 
@@ -96,7 +96,7 @@ class World:
     (x, y), d = pos, distance
     ids = set(self._mat_map[
         x - d: x + d + 1, y - d: y + d + 1].flatten().tolist())
-    materials = tuple(self._mat_names[x] for x in ids)
+    materials = tuple(self.mat_names[x] for x in ids)
     indices = self._obj_map[
         x - d: x + d + 1, y - d: y + d + 1].flatten().tolist()
     objs = {self._objects[i] for i in indices if i > 0}
@@ -104,10 +104,10 @@ class World:
 
   def mask(self, xmin, xmax, ymin, ymax, material):
     region = self._mat_map[xmin: xmax, ymin: ymax]
-    return (region == self._mat_ids[material])
+    return (region == self.mat_ids[material])
 
   def count(self, material):
-    return (self._mat_map == self._mat_ids[material]).sum()
+    return (self._mat_map == self.mat_ids[material]).sum()
 
   def chunk_key(self, pos):
     (x, y), (csx, csy) = pos, self._chunk_size
@@ -252,9 +252,9 @@ class SemanticView:
 
   def __init__(self, world, obj_types):
     self._world = world
-    self._mat_ids = world._mat_ids.copy()
+    self.mat_ids = world.mat_ids.copy()
     self._obj_ids = {
-        c: len(self._mat_ids) + i
+        c: len(self.mat_ids) + i
         for i, c in enumerate(obj_types)}
 
   def __call__(self):

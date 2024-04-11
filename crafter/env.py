@@ -117,6 +117,15 @@ class Env(BaseClass):
       reward = 0.0
     return obs, reward, done, info
 
+  def symbols(self, size=None):
+    materials = np.zeros(self._area, dtype=np.int32)
+    rows, cols = self._area
+    for i in range(rows):
+        for j in range(cols):
+          mat, _ = self._world[i, j]
+          materials[i, j] = self._world.mat_ids[mat]
+    return materials
+
   def render(self, size=None):
     if size is None:
       size = self._size
